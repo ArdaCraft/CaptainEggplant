@@ -7,6 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/dags-/CaptainEggplant/quotes"
+	"bufio"
 )
 
 // rub 233182426711588864
@@ -42,9 +43,22 @@ func main() {
 		return
 	}
 
+	go handleStop()
+
 	c := make(chan os.Signal, 1)
 	<-c
 	s.Close()
+}
+
+func handleStop() {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		if scanner.Text() == "stop" {
+			fmt.Println("Stopping...")
+			os.Exit(0)
+			break
+		}
+	}
 }
 
 func join(s *discordgo.Session, g *discordgo.GuildCreate) {
