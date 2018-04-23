@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"os"
 	"flag"
+	"fmt"
+	"os"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 // rub 233182426711588864
