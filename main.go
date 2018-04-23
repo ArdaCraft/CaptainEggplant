@@ -16,6 +16,8 @@ var token, target *string
 func main() {
 	token = flag.String("token", "", "Auth token")
 	target = flag.String("target", "", "The egg plantee")
+	flag.Parse()
+	
 	if *token == "" || *target == "" {
 		fmt.Println("token or id not provided: token=", "'" + *token + "'", "target=", "'" + *target + "'")
 		return
