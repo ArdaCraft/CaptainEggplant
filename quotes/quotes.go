@@ -11,72 +11,62 @@ import (
 	"sync"
 )
 
-const API = "https://api.tumblr.com/v2/blog/withyourface.tumblr.com/posts/quote?api_key=%s"
-const APIPAGE = "https://api.tumblr.com/v2/blog/withyourface.tumblr.com/posts/quote?api_key=%s&before=%s"
-
 type Quotes struct {
 	lock   sync.RWMutex
-	APIKey string
-	Last   time.Time
-	Queue  []string
-}
-
-type Response struct {
-	Meta     Meta  `json:"meta"`
-	Response *Data `json:"response"`
-}
-
-type Meta struct {
-	Status int `json:"status"`
-}
-
-type Data struct {
-	Posts []Post `json:"posts"`
-}
-
-type Post struct {
-	ID        int    `json:"id"`
-	Timestamp int    `json:"timestamp"`
-	Text      string `json:"text"`
+	apiKey string
+	last   time.Time
+	queue  []string
 }
 
 func New(key string) *Quotes {
 	return &Quotes{
-		APIKey: key,
-		Last:   time.Now(),
+		apiKey: key,
+		last:   time.Now(),
 	}
 }
 
 func (q *Quotes) ShouldRespond() bool {
-	q.lock.Lock()
-	defer q.lock.Unlock()
-	return time.Since(q.Last) > time.Duration(30 * time.Minute)
+	// read only
+	q.lock.RLock()
+	defer q.lock.RUnlock()
+
+	// check if 30 mins has passed since last message
+	return time.Since(q.last) > time.Duration(30 * time.Minute)
 }
 
 func (q *Quotes) NextQuote() string {
+	// full lock since we may be writing to the queue and/or timestamp
 	q.lock.Lock()
 	defer q.lock.Unlock()
 
-	if len(q.Queue) == 0 {
-		update(q)
-		if len(q.Queue) == 0 {
+	// fill queue if empty
+	if len(q.queue) == 0 {
+		fillQueue(q)
+		// still empty ? :(
+		if len(q.queue) == 0 {
 			return ""
 		}
 	}
 
-	quote := q.Queue[0]
-	q.Queue = q.Queue[1:]
-	q.Last = time.Now()
+	// drain the first quote from the queue
+	quote := q.queue[0]
+	q.queue = q.queue[1:]
+
+	// stamp the last usage time
+	q.last = time.Now()
 
 	return quote
 }
 
-func update(q *Quotes) {
+func fillQueue(q *Quotes) {
+	// map post id against the post to filter duplicates posts returned by the api pagination
 	posts := make(map[int]Post)
 	before := ""
 
+	// api responds with 20 items per page
+	// use the timestamp of the 20th item as the 'before' value in the next query
 	for {
-		page := getPage(q.APIKey, before)
+		page := getPage(q.apiKey, before)
 		before = ""
 
 		for _, p := range page {
@@ -91,51 +81,21 @@ func update(q *Quotes) {
 		}
 	}
 
-	q.Queue = make([]string, len(posts))
-
-	i := 0
-	for _, p := range posts {
-		q.Queue[i] = lower(p.Text)
-		i++
+	// transfer the unique quotes to the quotes queue
+	q.queue = make([]string, len(posts))
+	for i, p := range posts {
+		q.queue[i] = tidy(p.Text)
 	}
 
-	for i := range q.Queue {
+	// shuffle the queue
+	for i := range q.queue {
 		j := rand.Intn(i + 1)
-		q.Queue[i], q.Queue[j] = q.Queue[j], q.Queue[i]
+		q.queue[i], q.queue[j] = q.queue[j], q.queue[i]
 	}
 }
 
-func getPage(apiKey, before string) []Post {
-	var url string
-	var resp Response
-
-	if before == "" {
-		url = fmt.Sprintf(API, apiKey)
-	} else {
-		url = fmt.Sprintf(APIPAGE, apiKey, before)
-	}
-
-	r, e := http.Get(url)
-	if e != nil {
-		fmt.Println("http get error:", e)
-		return []Post{}
-	}
-
-	e = json.NewDecoder(r.Body).Decode(&resp)
-	if e != nil {
-		fmt.Println("json decode error:", e)
-		return []Post{}
-	}
-
-	if resp.Meta.Status != 200 || resp.Response == nil {
-		fmt.Println("invalid response:", resp)
-		return []Post{}
-	}
-
-	return resp.Response.Posts
-}
-
-func lower(s string) string {
+// removes whitespace prefix/suffix and ensures first word is un-capitalized
+func tidy(s string) string {
 	s = strings.Trim(s, " ")
 	return html.UnescapeString(strings.ToLower(string(s[0])) + string(s[1:]))
 }
