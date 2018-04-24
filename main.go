@@ -113,8 +113,14 @@ func sendResponse(s *discordgo.Session, m *discordgo.MessageCreate, msg string) 
 		return
 	}
 
-	content := fmt.Sprint("Oh ", m.Author.Mention(), ", with your face like a ", msg, " :eggplant:")
-	_, e := s.ChannelMessageSend(m.ChannelID, content)
+	u, e := s.User(*target)
+	if e != nil {
+		fmt.Println("get user error:", e)
+		return
+	}
+
+	content := fmt.Sprint("Oh ", u.Mention(), ", with your face like a ", msg, " :eggplant:")
+	_, e = s.ChannelMessageSend(m.ChannelID, content)
 
 	if e != nil {
 		fmt.Println("send response error:", e)
