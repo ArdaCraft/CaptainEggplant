@@ -1,12 +1,12 @@
 package quotes
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
 	"sync"
 	"time"
-	"io/ioutil"
-	"fmt"
-	"encoding/json"
-	"math/rand"
 )
 
 type Quotes struct {

@@ -1,14 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 
+	"github.com/ArdaCraft/CaptainEggplant/quotes"
 	"github.com/bwmarrin/discordgo"
-	"bufio"
-	"github.com/dags-/CaptainEggplant/quotes"
-	"math/rand"
 )
 
 // rub: 233182426711588864
