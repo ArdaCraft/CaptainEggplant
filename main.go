@@ -9,6 +9,7 @@ import (
 
 	"github.com/ArdaCraft/CaptainEggplant/quotes"
 	"github.com/bwmarrin/discordgo"
+	"time"
 )
 
 // rub: 233182426711588864
@@ -86,14 +87,14 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// @mentioning the bot invokes a response otherwise randomly send a message (less frequently)
 	if mentions(s.State.User.ID, m) {
 		// rate limited to once every 15 secs
-		if !q.CanInvoke() {
+		if !q.CanInvoke(15 * time.Second) {
 			return
 		}
 
 		sendResponse(s, m, q.NextResponse())
 	} else {
 		// rate limited to once every 12 hours
-		if !q.CanRespond() {
+		if !q.CanRespond(6 * time.Hour) {
 			return
 		}
 

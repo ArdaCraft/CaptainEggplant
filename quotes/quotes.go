@@ -23,16 +23,16 @@ func New() *Quotes {
 	}
 }
 
-func (q *Quotes) CanInvoke() bool {
+func (q *Quotes) CanInvoke(d time.Duration) bool {
 	q.lock.RLock()
 	defer q.lock.RUnlock()
-	return time.Since(q.invoke) > time.Duration(10*time.Second)
+	return time.Since(q.invoke) > d
 }
 
-func (q *Quotes) CanRespond() bool {
+func (q *Quotes) CanRespond(d time.Duration) bool {
 	q.lock.RLock()
 	defer q.lock.RUnlock()
-	return time.Since(q.auto) > time.Duration(12*time.Hour)
+	return time.Since(q.auto) > d
 }
 
 func (q *Quotes) Cooldown()  {
