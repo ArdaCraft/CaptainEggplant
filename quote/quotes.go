@@ -1,4 +1,4 @@
-package quotes
+package quote
 
 import (
 	"encoding/json"
