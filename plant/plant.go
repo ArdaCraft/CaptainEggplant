@@ -13,15 +13,17 @@ type Plants struct {
 }
 
 func New() *Plants {
-	var plants *Plants
+	var plants Plants
 
 	d, e := ioutil.ReadFile("plants.json")
 	if e == nil {
-		e = json.Unmarshal(d, plants)
+		e = json.Unmarshal(d, &plants)
 		if e == nil {
-			return plants
+			return &plants
 		}
 	}
+
+	fmt.Println(e)
 
 	return &Plants{Main: "", All: make(map[string]bool)}
 }
