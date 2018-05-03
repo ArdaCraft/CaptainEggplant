@@ -62,6 +62,8 @@ func setPlant(ctx *command.Context) error {
 		plants.All[user] = true
 		plants.Save()
 		fmt.Println("set main plant", user)
+		content := fmt.Sprintf("Consider yourself eggplanted <@%s> :eggplant:", user)
+		ctx.Session.ChannelMessageSend(ctx.Message.ChannelID, content)
 		ctx.Session.ChannelMessageDelete(ctx.Message.ChannelID, ctx.Message.ID)
 	}
 	return nil
@@ -75,6 +77,9 @@ func addPlant(ctx *command.Context) error {
 		plants.All[user] = true
 		plants.Save()
 		fmt.Println("added plant", user)
+
+		content := fmt.Sprintf("Consider yourself eggplanted <@%s> :eggplant:", user)
+		ctx.Session.ChannelMessageSend(ctx.Message.ChannelID, content)
 		ctx.Session.ChannelMessageDelete(ctx.Message.ChannelID, ctx.Message.ID)
 	}
 	return nil
@@ -120,7 +125,7 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 		sendResponse(s, m, quotes.NextResponse())
 	} else {
 		// rate limited to once every 12 hours
-		if !quotes.CanRespond(6 * time.Hour) {
+		if !quotes.CanRespond(3 * time.Hour) {
 			return
 		}
 
