@@ -42,9 +42,9 @@ func main() {
 
 	b := bot.New(token)
 	b.AddHandler(message)
-	b.AddCommand(command.New("!egg set <@user>", &[]string{"admin"}, setPlant))
-	b.AddCommand(command.New("!egg add <@user>", &[]string{"admin"}, addPlant))
-	b.AddCommand(command.New("!egg rem <@user>", &[]string{"admin"}, remPlant))
+	b.AddCommand(command.New("!egg set <@user>", &[]string{"Admin", "Developer"}, setPlant))
+	b.AddCommand(command.New("!egg add <@user>", &[]string{"Admin", "Developer"}, addPlant))
+	b.AddCommand(command.New("!egg rem <@user>", &[]string{"Admin", "Developer"}, remPlant))
 
 	// listen for console 'stop' command
 	go handleStop()
