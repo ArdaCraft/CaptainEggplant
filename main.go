@@ -94,6 +94,7 @@ func remPlant(ctx *command.Context) error {
 			plants.Main = ""
 		}
 		delete(plants.All, user)
+		plants.Save()
 		fmt.Println("removed plant", user)
 		ctx.Session.ChannelMessageDelete(ctx.Message.ChannelID, ctx.Message.ID)
 	}
