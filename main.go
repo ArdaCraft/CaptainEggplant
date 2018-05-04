@@ -45,6 +45,8 @@ func main() {
 	b.AddCommand(command.New("!egg set <@user>", &[]string{"Admin", "Developer"}, setPlant))
 	b.AddCommand(command.New("!egg add <@user>", &[]string{"Admin", "Developer"}, addPlant))
 	b.AddCommand(command.New("!egg rem <@user>", &[]string{"Admin", "Developer"}, remPlant))
+	b.AddCommand(command.New("!egg ignore <channel>", &[]string{"Admin", "Developer"}, ignoreChan))
+	b.AddCommand(command.New("!egg unignore <channel>", &[]string{"Admin", "Developer"}, unignoreChan))
 
 	// listen for console 'stop' command
 	go handleStop()
@@ -101,6 +103,30 @@ func remPlant(ctx *command.Context) error {
 	return nil
 }
 
+func ignoreChan(ctx *command.Context) error {
+	lock.Lock()
+	defer lock.Unlock()
+	ch := ctx.Args["channel"]
+	if ch != "" {
+		plants.Ignore[ch] = true
+		plants.Save()
+		fmt.Println("ignoring channel", ch)
+	}
+	return nil
+}
+
+func unignoreChan(ctx *command.Context) error {
+	lock.Lock()
+	defer lock.Unlock()
+	ch := ctx.Args["channel"]
+	if ch != "" {
+		delete(plants.Ignore, ch)
+		plants.Save()
+		fmt.Println("un-ignoring channel", ch)
+	}
+	return nil
+}
+
 func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.Bot || m.Author.ID == s.State.User.ID {
 		return
@@ -109,6 +135,12 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 	lock.Lock()
 	defer lock.Unlock()
 
+	// ignore channel
+	if _, ok := plants.Ignore[m.ChannelID]; ok {
+		return
+	}
+
+	// is eggplantee
 	if _, ok := plants.All[m.Author.ID]; ok {
 		e := s.MessageReactionAdd(m.ChannelID, m.Message.ID, "🍆")
 		if e != nil {
@@ -152,7 +184,7 @@ func sendResponse(s *discordgo.Session, m *discordgo.MessageCreate, msg string) 
 		return
 	}
 
-	content := fmt.Sprint("Oh ", u.Mention(), ", with your face like a ", msg, " :eggplant:")
+	content := fmt.Sprint("Oh ", u.Mention(), ", with your face like ", msg, " :eggplant:")
 	_, e = s.ChannelMessageSend(m.ChannelID, content)
 
 	if e != nil {

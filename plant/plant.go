@@ -8,8 +8,9 @@ import (
 )
 
 type Plants struct {
-	Main string          `json:"main"`
-	All  map[string]bool `json:"all"`
+	Main   string          `json:"main"`
+	All    map[string]bool `json:"all"`
+	Ignore map[string]bool `json:"ignore"`
 }
 
 func New() *Plants {
@@ -25,7 +26,7 @@ func New() *Plants {
 
 	fmt.Println(e)
 
-	return &Plants{Main: "", All: make(map[string]bool)}
+	return &Plants{Main: "", All: make(map[string]bool), Ignore: make(map[string]bool)}
 }
 
 func (p *Plants) Save() {
