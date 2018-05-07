@@ -1,5 +1,5 @@
 # CaptainEggplant
 
-![](img/captain0.jpg)  
-![](img/captain1.jpg)  
-![](img/captain2.jpg)  
+![](assets/captain0.jpg)  
+![](assets/captain1.jpg)  
+![](assets/captain2.jpg)  
